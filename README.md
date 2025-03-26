@@ -1,3 +1,5 @@
+# Scan Ip For Raspberry Pi
+
 It seems that the Quest 3 is missing some necessary code to detect the Raspberry Pi's mDNS via [Avahi](https://webshed.org/projects/raspberrypi/mdns/).  
 
 I tried using Java Native code, C# DNS, and even a raw connection, but none of them worked.  
