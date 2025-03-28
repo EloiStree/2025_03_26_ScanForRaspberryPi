@@ -6,8 +6,13 @@ using UnityEngine.Events;
 namespace Eloi.ScanIP
 {
 
+    public interface I_LaunchableIpScanCoroutines {
 
-    public class CheckForFlaskPageMono : MonoBehaviour {
+        void LaunchIpScanCoroutines();
+    }
+
+    public class CheckForFlaskPageMono : A_LaunchableIpScanCoroutinesMono
+    {
 
         //MAYBE MAKE A FLASK SERVER WITH THE DEVICE MAC ADDRESS
         // http://{0}:8080/id
@@ -31,7 +36,7 @@ namespace Eloi.ScanIP
         }
 
         [ContextMenu("Refresh")]
-        public void Refresh() {
+        public override void LaunchIpScanCoroutines() {
             CheckPortCoroutineUtility.GetAllIpv4ToCheck(out List<string> addresses, out m_addressRangeZone);
             foreach (string address in addresses)
             {

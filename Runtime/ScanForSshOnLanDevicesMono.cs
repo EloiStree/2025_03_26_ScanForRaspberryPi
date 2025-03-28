@@ -7,7 +7,7 @@ namespace Eloi.ScanIP
 {
 
 
-    public class ScanForSshOnLanDevicesMono : ScanForSpecificPortTcpOnLanDevicesMono
+    public class ScanForSshOnLanDevicesMono : ScanIpMono_LookForSpecificPortTcpOnLanDevicesMono
     {
 
         

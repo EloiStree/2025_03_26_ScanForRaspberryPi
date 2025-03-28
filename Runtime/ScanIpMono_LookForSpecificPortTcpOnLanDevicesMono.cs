@@ -7,7 +7,7 @@ using UnityEngine.Events;
 
 namespace Eloi.ScanIP
 {
-    public class ScanForSpecificPortTcpOnLanDevicesMono : MonoBehaviour {
+    public class ScanIpMono_LookForSpecificPortTcpOnLanDevicesMono : A_LaunchableIpScanCoroutinesMono {
 
         public int m_tcpPort = 22;
         public bool m_refreshAtStart;
@@ -15,23 +15,16 @@ namespace Eloi.ScanIP
         [Header("Debug")]
         public List<string> m_addressRangeZone = new List<string>();
         public List<TargetIpPortToLookFor> m_deviceWithPortAccessible;
-        public UnityEvent<string> m_onSshIpFound;
+        public UnityEvent<string> m_onPortOnIpFound;
 
 
-        public void Start()
-        {
-            if (m_refreshAtStart)
-                Refresh();
-        }
-
-        [ContextMenu("Refresh")]
-        public void Refresh()
+        public override void LaunchIpScanCoroutines()
         {
             TargetPortToLookFor ssh = new TargetPortToLookFor(m_tcpPort, PortCheckType.Websocket);
             m_deviceWithPortAccessible = new List<TargetIpPortToLookFor>();
             m_addressRangeZone = new List<string>();
             Action<TargetIpPortToLookFor> action = (s) => {
-                m_onSshIpFound?.Invoke(s.m_ip);
+                m_onPortOnIpFound?.Invoke(s.m_ip);
                 m_deviceWithPortAccessible.Add(s);
             };
 
