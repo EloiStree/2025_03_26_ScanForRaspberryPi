@@ -2,7 +2,7 @@
 {                                                                                
   "name": "be.elab.scanpioffline",                              
   "displayName": "Scan For Raspberry Pi",                        
-  "version": "0.0.1",                         
+  "version": "2025.3.26",                         
   "unity": "2018.1",                             
   "unityRelease": "",                             
   "description": "This package are some tools to find and identify the Raspberry Pi (s) on the LAN offline in Unity3D when DNS don't apply (Quest3 for example)",                         
@@ -17,7 +17,7 @@
     }
   ] ,     
   "author" : {
-"name":"",
+"name":"Eloi Stree",
 "mail":"",
 "url":""},     
   "repository":{
