@@ -133,6 +133,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3887583902246910693}
+  - component: {fileID: 4732843769643326533}
   m_Layer: 0
   m_Name: Scan For Raspberry Pi
   m_TagString: Untagged
@@ -161,6 +162,31 @@ Transform:
   - {fileID: 2311686865126805407}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4732843769643326533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2203611186180337614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bdb9ec3d8302ab468fde19ddc6cdc85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_targetGroup:
+    m_requiredPort:
+    - m_port: 0
+      m_portType: 0
+    - m_port: 0
+      m_portType: 0
+  m_target:
+    m_port: 123
+    m_portType: 0
+  m_ip: 192.168.1.126
+  m_result:
+    m_isPortReachable: 0
+    m_finishedCoroutine: 0
 --- !u!1 &2524494728958240660
 GameObject:
   m_ObjectHideFlags: 0

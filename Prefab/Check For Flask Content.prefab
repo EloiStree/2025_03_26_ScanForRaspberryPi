@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7054183885694761470
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6868910165623749700}
+  - component: {fileID: 6506332664648364200}
+  - component: {fileID: 7448938314845553117}
+  m_Layer: 0
+  m_Name: Check For Flask Content
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6868910165623749700
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7054183885694761470}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6506332664648364200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7054183885694761470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7051c919c68b141469aec89a4a3fd405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hostname: raspberrypi.local
+  m_onIpv4Found:
+    m_PersistentCalls:
+      m_Calls: []
+  m_onHostnameNoFoundOrDnsUnsupported:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7448938314845553117}
+        m_TargetAssemblyTypeName: Eloi.ScanIP.CheckForFlaskPageMono, be.elab.scanpioffline
+        m_MethodName: Refresh
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7448938314845553117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7054183885694761470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7583818423a469446b7ff7352971198d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_url: http://{0}:8080/hostname
+  m_expected: raspberrypi
+  m_addressRangeZone:
+  - 172.25.112
+  - 192.168.1
+  m_foundHttp:
+  - m_address: 192.168.1.126
+    m_result: raspberrypi
+  - m_address: 192.168.1.1
+    m_result: '<html><head><script language="javascript">
+
+      window.location.href="http://192.168.1.1/login.lp?event=ServerConnect"
+
+      //intercepted:
+      192.168.1.1:8080&#47;hostname
+
+      </script></head></html>
+
+
+'
+  m_foundHttpWithExpected:
+  - m_address: 192.168.1.126
+    m_result: raspberrypi
+  m_onFoundIp:
+    m_PersistentCalls:
+      m_Calls: []
+  m_onFoundIpWithExpected:
+    m_PersistentCalls:
+      m_Calls: []
