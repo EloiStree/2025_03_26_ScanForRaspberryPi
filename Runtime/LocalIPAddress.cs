@@ -8,13 +8,15 @@ using System.Threading;
 using System;
 using System.Net;
 using System.Text;
-using UnityEngine.SocialPlatforms;
-
+using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine.Networking;
 
 namespace Eloi.ScanIP
 {
 
-    public class CheckPortCoroutineUtility {
+    public class CheckPortCoroutineUtility
+    {
 
 
 
@@ -50,55 +52,119 @@ namespace Eloi.ScanIP
 
         }
 
-        public static void  GetLocalIpRangeGroup(out List<string> maskListIpv4)
+        public static void GetLocalIpRangeGroup(out List<string> maskListIpv4, bool filterMask = true)
         {
-
+            //ScanLocalNetwork
             maskListIpv4 = new List<string>();
-            foreach (NetworkInterface netInterface in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
+
+            List<string> ipList = new List<string>();
+
+
+            //string networkMask = NetworkInfoHelper.GetNetworkMask();
+            //Debug.Log("Network Mask: " + networkMask);
+
+            foreach (NetworkInterface netInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (netInterface.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
-                    (netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-                     netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet))
+                //if (netInterface.OperationalStatus == OperationalStatus.Up) // Only active interfaces
                 {
                     foreach (UnicastIPAddressInformation ip in netInterface.GetIPProperties().UnicastAddresses)
                     {
-                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                        //if (ip.Address.AddressFamily == AddressFamily.InterNetwork )
                         {
                             string ipString = ip.Address.ToString();
+                            if (filterMask)
+                            {
+                                GetFirstThreeParts(ipString, out bool wasIpv4, out string frontPart, out string ipPart);
+                                if (wasIpv4)//&& frontPart!= "127.0.0")
+                                {
+                                    maskListIpv4.Add(frontPart);
+                                }
 
-                            GetFirstThreeParts(ipString, out bool wasIpv4, out string frontPart, out string ipPart);
-                            if (wasIpv4) { 
-                                maskListIpv4.Add(frontPart);
+                            }
+                            else
+                            {
+                                maskListIpv4.Add(ipString);
                             }
                         }
                     }
                 }
             }
+
+
+
+
+            // TO WORK ON ANDROID ?
+            string hostName = Dns.GetHostName();
+            IPAddress[] addresses = Dns.GetHostAddresses(hostName);
+            foreach (IPAddress address in addresses)
+            {
+                //if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    string ipString = address.ToString();
+                    if (filterMask)
+                    {
+                        GetFirstThreeParts(ipString, out bool wasIpv4, out string frontPart, out string ipPart);
+                        if (wasIpv4)
+                        {
+                            maskListIpv4.Add(frontPart);
+                        }
+                    }
+                    else
+                    {
+
+                        maskListIpv4.Add(ipString);
+                    }
+                }
+            }
+
+            maskListIpv4 = maskListIpv4.Distinct().ToList();
+
+
         }
 
-        public static void GetFirstThreeParts(string ip,out bool wasIpv4, out string ipFrontPart, out string ipPart)
+        public static async Task<List<string>> ScanLocalNetwork(int timeout = 100)
+        {
+            List<string> activeIPs = new List<string>();
+            string baseIP = "192.168.1."; // Adjust based on your network
+
+            for (int i = 1; i < 255; i++)
+            {
+                string ip = baseIP + i;
+                System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
+                var reply = await ping.SendPingAsync(ip, timeout);
+
+                if (reply.Status == IPStatus.Success)
+                {
+                    activeIPs.Add(ip);
+                }
+            }
+
+            return activeIPs;
+        }
+
+        public static void GetFirstThreeParts(string ip, out bool wasIpv4, out string ipFrontPart, out string ipPart)
         {
             string[] parts = ip.Split('.');
-            if (parts.Length >=4 )
+            if (parts.Length >= 4)
             {
                 ipFrontPart = $"{parts[0]}.{parts[1]}.{parts[2]}";
                 ipPart = parts[3];
-                wasIpv4 = true ;
+                wasIpv4 = true;
                 return;
             }
 
-            wasIpv4=false ;
+            wasIpv4 = false;
             ipFrontPart = "";
             ipPart = "";
-            
+
         }
-        public static IEnumerator IsAllPortReachable(string ip, TargetPortToLookForGroup lookFor, Action<string> ipValideFound, CheckPortCallBackResult callback=null)
+        public static IEnumerator IsAllPortReachable(string ip, TargetPortToLookForGroup lookFor, Action<string> ipValideFound, CheckPortCallBackResult callback = null)
         {
             if (callback == null)
                 callback = new CheckPortCallBackResult();
             yield return IsAllPortReachable(ip, lookFor, callback);
-            if (callback.m_isPortReachable == true) 
-                if (ipValideFound != null) 
+            if (callback.m_isPortReachable == true)
+                if (ipValideFound != null)
                     ipValideFound(ip);
 
         }
@@ -112,18 +178,20 @@ namespace Eloi.ScanIP
             ipCallback.m_finishedCoroutine = callback.m_finishedCoroutine;
 
         }
-        public static IEnumerator IsAllPortReachable(string ip, TargetPortToLookForGroup lookFor, CheckPortCallBackResult callback) { 
-        
-           foreach (TargetPortToLookFor targetPort in lookFor.m_requiredPorts)
-           { 
+        public static IEnumerator IsAllPortReachable(string ip, TargetPortToLookForGroup lookFor, CheckPortCallBackResult callback)
+        {
+
+            foreach (TargetPortToLookFor targetPort in lookFor.m_requiredPorts)
+            {
                 CheckPortCallBackResult result = new CheckPortCallBackResult();
                 yield return IsReachable(ip, targetPort, result);
-                if (!result.m_isPortReachable) {
+                if (!result.m_isPortReachable)
+                {
                     callback.NotifyAsNotReached();
                     yield break;
                 }
-           }
-           callback.NotifyAsReached();
+            }
+            callback.NotifyAsReached();
 
         }
 
@@ -150,31 +218,34 @@ namespace Eloi.ScanIP
 
         public static IEnumerator IsReachable(string hostname, TargetPortToLookFor lookFor, CheckPortCallBackResult callback)
         {
-            if (lookFor == null) {
+            if (lookFor == null)
+            {
 
                 callback.NotifyAsNotReached();
                 yield break;
             }
 
-            if (string.IsNullOrWhiteSpace(hostname)) {
+            if (string.IsNullOrWhiteSpace(hostname))
+            {
 
                 callback.NotifyAsNotReached();
                 yield return null;
             }
 
-            if (callback == null) { 
+            if (callback == null)
+            {
                 callback = new CheckPortCallBackResult();
             }
 
             if (lookFor.m_portType == PortCheckType.TCP)
                 yield return IsReachableTcp(hostname, lookFor, callback);
-            else if (lookFor.m_portType== PortCheckType.UDP)
+            else if (lookFor.m_portType == PortCheckType.UDP)
                 yield return IsReachableUdp(hostname, lookFor, callback);
-            else if (lookFor.m_portType== PortCheckType.Websocket
-                || lookFor.m_portType== PortCheckType.SecureWebsocket)
+            else if (lookFor.m_portType == PortCheckType.Websocket
+                || lookFor.m_portType == PortCheckType.SecureWebsocket)
                 yield return IsReachableWebsocket(hostname, lookFor, callback);
-            else if (lookFor.m_portType== PortCheckType.HTTP
-                || lookFor.m_portType== PortCheckType.HTTPS)
+            else if (lookFor.m_portType == PortCheckType.HTTP
+                || lookFor.m_portType == PortCheckType.HTTPS)
                 yield return IsReachableHTTP(hostname, lookFor, callback);
         }
 
@@ -184,46 +255,46 @@ namespace Eloi.ScanIP
             callback.Reset();
             string ipAddress = ip.Trim();
             int port = lookFor.m_port;
-            
-                using (UdpClient udpClient = new UdpClient())
+
+            using (UdpClient udpClient = new UdpClient())
+            {
+                udpClient.Client.ReceiveTimeout = 2000;
+                IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+                byte[] message = Encoding.UTF8.GetBytes("Ping");
+                udpClient.Send(message, message.Length, remoteEndPoint);
+
+                DateTime startTime = DateTime.Now;
+                bool received = false;
+
+                while ((DateTime.Now - startTime).TotalSeconds < 2) // 2-second timeout
                 {
-                        udpClient.Client.ReceiveTimeout = 2000; 
-                        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
-                        byte[] message = Encoding.UTF8.GetBytes("Ping"); 
-                        udpClient.Send(message, message.Length, remoteEndPoint);
-
-                        DateTime startTime = DateTime.Now;
-                        bool received = false;
-
-                        while ((DateTime.Now - startTime).TotalSeconds < 2) // 2-second timeout
+                    try
+                    {
+                        if (udpClient.Available > 0)
                         {
-                            try
-                            {
-                                if (udpClient.Available > 0)
-                                {
-                                    byte[] receivedData = udpClient.Receive(ref remoteEndPoint);
-                                    Debug.Log($"Received response: {Encoding.UTF8.GetString(receivedData)}");
-                                    received = true;
-                                    break;
-                                }
-                            }
-                            catch (SocketException ex)
-                            {
-                                Debug.Log($"Error checking port {port}: {ex.Message}");
-                                yield break;
-                            }
-                            yield return null; // Wait for the next frame
+                            byte[] receivedData = udpClient.Receive(ref remoteEndPoint);
+                            Debug.Log($"Received response: {Encoding.UTF8.GetString(receivedData)}");
+                            received = true;
+                            break;
                         }
-
-                        if (received)
-                        {
-                            Debug.Log($"Port {port} is open!");
-                            callback.NotifyAsReached();
-                    yield break;
-                        }
-                       
-                    
+                    }
+                    catch (SocketException ex)
+                    {
+                        Debug.Log($"Error checking port {port}: {ex.Message}");
+                        yield break;
+                    }
+                    yield return null; // Wait for the next frame
                 }
+
+                if (received)
+                {
+                    Debug.Log($"Port {port} is open!");
+                    callback.NotifyAsReached();
+                    yield break;
+                }
+
+
+            }
 
             callback.Finished();
 
@@ -292,16 +363,18 @@ namespace Eloi.ScanIP
 
 
         }
-        public static IEnumerator IsReachableUrl(string url, Action<string> pageContentIfReach, CheckPortCallBackResult callback=null)
+        public static IEnumerator IsReachableUrl(string url, Action<string> pageContentIfReach, CheckPortCallBackResult callback = null)
         {
-            if(callback==null)
+            if (callback == null)
                 callback = new CheckPortCallBackResult();
             callback.Reset();
             UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
-            if (request.result == UnityWebRequest.Result.Success) {
+            if (request.result == UnityWebRequest.Result.Success)
+            {
 
-                if (pageContentIfReach != null) {
+                if (pageContentIfReach != null)
+                {
                     pageContentIfReach?.Invoke(request.downloadHandler.text);
                 };
                 callback.NotifyAsReached();
@@ -317,7 +390,8 @@ namespace Eloi.ScanIP
     }
 
     [System.Serializable]
-    public class CheckPortIpCallBackResult {
+    public class CheckPortIpCallBackResult
+    {
 
         public string m_ip;
         public bool m_isPortReachable;
@@ -385,9 +459,9 @@ namespace Eloi.ScanIP
         }
     }
     [System.Serializable]
-    public class TargetPortToLookForGroup 
+    public class TargetPortToLookForGroup
     {
-        public TargetPortToLookFor[] m_requiredPorts; 
+        public TargetPortToLookFor[] m_requiredPorts;
     }
     [System.Serializable]
     public class TargetIpPortToLookFor
@@ -411,8 +485,9 @@ namespace Eloi.ScanIP
         }
     }
     [System.Serializable]
-    public class TargetPortToLookFor { 
-    
+    public class TargetPortToLookFor
+    {
+
         public int m_port;
         public PortCheckType m_portType;
 
@@ -428,17 +503,18 @@ namespace Eloi.ScanIP
 
 public class LocalIPAddress : MonoBehaviour
 {
-    [TextArea(0,5)]
+    [TextArea(0, 5)]
     public string localIP;
     [TextArea(0, 5)]
     public string ipPrefix;
     void Start()
     {
-        
+
     }
 
     [ContextMenu("Refresh")]
-    public void Refresh() {
+    public void Refresh()
+    {
 
         localIP = GetLocalIPAddress();
         Debug.Log("Full Local IP: " + localIP);
@@ -449,7 +525,7 @@ public class LocalIPAddress : MonoBehaviour
 
     string GetLocalIPAddress()
     {
-         localIP = "127.0.0.1"; // Default fallback
+        localIP = "127.0.0.1"; // Default fallback
 
         foreach (NetworkInterface netInterface in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
         {
@@ -461,7 +537,7 @@ public class LocalIPAddress : MonoBehaviour
                 {
                     if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        localIP+="\n"+ ip.Address.ToString(); // Return first valid LAN IP
+                        localIP += "\n" + ip.Address.ToString(); // Return first valid LAN IP
                     }
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -28,6 +29,9 @@ namespace Eloi.ScanIP
         public UnityEvent<string> m_onFoundIp;
         public UnityEvent<string> m_onFoundIpWithExpected;
 
+        public UnityEvent<string> m_onDebugProcess;
+
+        public UnityEvent<string> m_onDebugProcessIps;
 
         [System.Serializable]
         public class FoundHttp {
@@ -37,10 +41,19 @@ namespace Eloi.ScanIP
 
         [ContextMenu("Refresh")]
         public override void LaunchIpScanCoroutines() {
+            m_callback.Clear();
             CheckPortCoroutineUtility.GetAllIpv4ToCheck(out List<string> addresses, out m_addressRangeZone);
+            CheckPortCoroutineUtility.GetLocalIpRangeGroup(out List<string> ips, false);
+
+
+            m_onDebugProcessIps.Invoke(string.Join(" , ", ips.ToArray()));
+
+
+
             foreach (string address in addresses)
             {
-
+                if (ips.Contains(address))
+                    continue;
                 Action<string> a = (s) => {
 
                     var found = new FoundHttp()
@@ -56,13 +69,36 @@ namespace Eloi.ScanIP
                         m_onFoundIpWithExpected.Invoke(address);
                     }
                 };
+                CheckPortCallBackResult resultCheck = new CheckPortCallBackResult();
+                m_callback.Add(resultCheck);
                 StartCoroutine(CheckPortCoroutineUtility
                     .IsReachableUrl(
-                       string.Format( m_url, address), a ));
+                       string.Format( m_url, address), a, resultCheck));
             }
         }
+        public List<CheckPortCallBackResult> m_callback;
+        public float m_percentDone;
 
-        
+        public void Update()
+        {
+            if (m_callback != null && m_callback.Count > 0)
+            {
+                m_percentDone = m_callback.Where(c => c.m_finishedCoroutine).Count() / (float)m_callback.Count;
+            }
+            else { 
+            
+                m_percentDone = 0;
+            }
+            string debug = $@"
+    PCT: {m_percentDone}
+    Count: {m_callback.Count}
+    Count: {m_callback.Count}
+    RangeZone: {string.Join(" , ",m_addressRangeZone)}
+";
+            m_onDebugProcess.Invoke(debug);
+        }
+
+
     }
 }
 
