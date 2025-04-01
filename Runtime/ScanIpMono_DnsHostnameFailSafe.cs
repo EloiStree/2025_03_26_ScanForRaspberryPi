@@ -16,9 +16,7 @@ public class ScanIpMono_DnsHostnameFailSafe : MonoBehaviour
     public bool m_tryToReachAtEnable=true;
     public bool m_useDebugLogForError;
 
-    public string [] m_notSupportedDNS= new string[] { 
-        ".local"
-    };
+   
 
     public string m_ipFound;
     public string [] m_ipsFound;
@@ -38,17 +36,17 @@ public class ScanIpMono_DnsHostnameFailSafe : MonoBehaviour
     public void TryToReachAndInvoke()
     {
 
-        foreach (string notSupportedString in m_notSupportedDNS) {
+        //foreach (string notSupportedString in m_notSupportedDNS) {
 
-            if (m_wantedHostname.Contains(notSupportedString)) { 
-                m_errorHappened = true;
-                m_errorMessage = "This DNS is a mDNS that is not supported on Quest3 local Network.";
-                m_onUnreachableTargetHostname.Invoke(m_wantedHostname);
-                if (m_useDebugLogForError)
-                    Debug.Log(m_errorMessage);
-                return;
-            }
-        }
+        //    if (m_wantedHostname.Contains(notSupportedString)) { 
+        //        m_errorHappened = true;
+        //        m_errorMessage = "This DNS is a mDNS that is not supported on Quest3 local Network.";
+        //        m_onUnreachableTargetHostname.Invoke(m_wantedHostname);
+        //        if (m_useDebugLogForError)
+        //            Debug.Log(m_errorMessage);
+        //        return;
+        //    }
+        //}
         try
         {
             IPAddress[] addresses = Dns.GetHostAddresses(m_wantedHostname);
