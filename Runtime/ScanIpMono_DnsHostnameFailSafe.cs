@@ -32,6 +32,12 @@ public class ScanIpMono_DnsHostnameFailSafe : MonoBehaviour
         if (m_tryToReachAtEnable)
             TryToReachAndInvoke();
     }
+
+    public void SetHostname(string hostname)
+    {
+        m_wantedHostname = hostname;
+    }
+
     [ContextMenu("Try To Reach and Invoke")]
     public void TryToReachAndInvoke()
     {
