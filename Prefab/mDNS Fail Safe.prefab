@@ -220,8 +220,6 @@ MonoBehaviour:
   m_wantedHostname: raspberrypi.local
   m_tryToReachAtEnable: 1
   m_useDebugLogForError: 1
-  m_notSupportedDNS:
-  - .local
   m_ipFound: 
   m_ipsFound: []
   m_errorHappened: 0
@@ -780,7 +778,19 @@ MonoBehaviour:
         m_CallState: 2
   m_onNothingFound:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2262876988509376145}
+        m_TargetAssemblyTypeName: ScanIpMono_Ipv4ToPorts, be.elab.scanpioffline
+        m_MethodName: PushIpv4ToUse
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 127.0.0.1
+          m_BoolArgument: 0
+        m_CallState: 2
   m_scanToLaunch:
   - {fileID: 0}
   - {fileID: 6177996630061355213}
