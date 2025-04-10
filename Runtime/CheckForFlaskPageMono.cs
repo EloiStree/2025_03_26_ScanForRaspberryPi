@@ -41,6 +41,8 @@ namespace Eloi.ScanIP
 
         [ContextMenu("Refresh")]
         public override void LaunchIpScanCoroutines() {
+
+
             m_callback.Clear();
             CheckPortCoroutineUtility.GetAllIpv4ToCheck(out List<string> addresses, out m_addressRangeZone);
             CheckPortCoroutineUtility.GetLocalIpRangeGroup(out List<string> ips, false);
