@@ -76,7 +76,7 @@ public class ScanIpMono_DnsHostnameFailSafe : MonoBehaviour
         {
             m_ipFound = "";
             m_errorHappened = true;
-            m_errorMessage ="AA "+ e.Message + ":" + e.StackTrace;
+            m_errorMessage = e.Message + ":" + e.StackTrace;
             if (m_useDebugLogForError)
                 Debug.LogWarning(m_errorMessage);
             m_onUnreachableTargetHostname.Invoke(m_wantedHostname);
